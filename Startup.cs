@@ -1,7 +1,10 @@
 using bafta_api.Data;
+using bafta_api.Errors;
+using bafta_api.Exstensions;
 using bafta_api.Helpers;
 using bafta_api.Implementations;
 using bafta_api.Interfaces;
+using bafta_api.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -41,15 +44,22 @@ namespace bafta_api
             //add connectionstring
             services.AddDbContext<StoreContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            //add product service
-            services.AddScoped<IProductRepository, ProductRepository>();
-
-            //add generic service
-
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            //add extracted extended class
+            services.AddApplicationServices();
 
             //add automapper
             services.AddAutoMapper(typeof(MappingProfiles));
+
+            //add CORS
+            services.AddCors(opt=>
+            {
+                opt.AddPolicy("CorsPolicy", policy =>
+                {
+                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200");
+                });
+            });
+
+         
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -62,11 +72,17 @@ namespace bafta_api
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "bafta_api v1"));
             }
 
+            app.UseMiddleware<ExceptionMiddleware>();
+
+            app.UseStatusCodePagesWithReExecute("/errors/{0}");
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
             app.UseStaticFiles();
+
+            app.UseCors("CorsPolicy");
 
             app.UseAuthorization();
 

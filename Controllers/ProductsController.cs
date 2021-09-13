@@ -11,12 +11,12 @@ using bafta_api.Interfaces;
 using bafta_api.Specifications;
 using AutoMapper;
 using bafta_api.Dtos;
+using bafta_api.Errors;
+using bafta_api.Helpers;
 
 namespace bafta_api.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProductsController : ControllerBase
+    public class ProductsController : BaseApiController
     {
         private readonly IGenericRepository<Product> productsRepo;
         private readonly IGenericRepository<ProductType> prouctTypeRepo;
@@ -31,22 +31,30 @@ namespace bafta_api.Controllers
 
         // GET: api/Products
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts()
+        public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts([FromQuery]ProductSpecParams productParams)
         {
-            var spec = new ProductsWithTypesSpecification();
+            var spec = new ProductsWithTypesSpecification(productParams);
+            var countSpec = new ProductWithFiltersForCountSpecification(productParams);
+            var totalItems = await productsRepo.CountAsync(countSpec);
             var products = await productsRepo.ListAsync(spec);
 
-            return Ok(mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products));
+            var data = mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products);
+
+            return Ok(new Pagination<ProductToReturnDto>(productParams.PageIndex,productParams.PageSize,totalItems,data));
         }
 
         // GET: api/Products/1
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
         {
             var spec = new ProductsWithTypesSpecification(id);
 
             var product = await productsRepo.GetEntityWithSpec(spec);
+
+            if (product == null) return NotFound(new ApiResponse(404));
 
             return mapper.Map<Product, ProductToReturnDto>(product);
         }
