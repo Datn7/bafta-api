@@ -9,6 +9,8 @@ using bafta_api.Data;
 using bafta_api.Entities;
 using bafta_api.Interfaces;
 using bafta_api.Specifications;
+using AutoMapper;
+using bafta_api.Dtos;
 
 namespace bafta_api.Controllers
 {
@@ -18,33 +20,39 @@ namespace bafta_api.Controllers
     {
         private readonly IGenericRepository<Product> productsRepo;
         private readonly IGenericRepository<ProductType> prouctTypeRepo;
+        private readonly IMapper mapper;
 
-        public ProductsController(IGenericRepository<Product> productsRepo, IGenericRepository<ProductType> prouctTypeRepo)
+        public ProductsController(IGenericRepository<Product> productsRepo, IGenericRepository<ProductType> prouctTypeRepo, IMapper mapper)
         {
             this.productsRepo = productsRepo;
             this.prouctTypeRepo = prouctTypeRepo;
+            this.mapper = mapper;
         }
 
         // GET: api/Products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts()
         {
             var spec = new ProductsWithTypesSpecification();
             var products = await productsRepo.ListAsync(spec);
 
-            return Ok(products);
+            return Ok(mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products));
         }
 
         // GET: api/Products/1
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
         {
             var spec = new ProductsWithTypesSpecification(id);
 
-            return await productsRepo.GetEntityWithSpec(spec);
+            var product = await productsRepo.GetEntityWithSpec(spec);
+
+            return mapper.Map<Product, ProductToReturnDto>(product);
         }
 
+
+        // GET: api/types
         [HttpGet("types")]
         public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductTypes()
         {

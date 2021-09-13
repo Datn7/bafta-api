@@ -1,4 +1,5 @@
 using bafta_api.Data;
+using bafta_api.Helpers;
 using bafta_api.Implementations;
 using bafta_api.Interfaces;
 using Microsoft.AspNetCore.Builder;
@@ -46,6 +47,9 @@ namespace bafta_api
             //add generic service
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+            //add automapper
+            services.AddAutoMapper(typeof(MappingProfiles));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,6 +65,8 @@ namespace bafta_api
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseStaticFiles();
 
             app.UseAuthorization();
 
