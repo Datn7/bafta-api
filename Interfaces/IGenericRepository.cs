@@ -1,5 +1,7 @@
 ﻿using bafta_api.Entities;
 using bafta_api.Specifications;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +16,7 @@ namespace bafta_api.Interfaces
         Task<T> GetEntityWithSpec(ISpecification<T> spec);
         Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec);
         Task<int> CountAsync(ISpecification<T> spec);
+        Task<ImageUploadResult> AddPhotoAsync(IFormFile file);
+        Task<DeletionResult> DeletePhotoAsync(string publicId);
     }
 }

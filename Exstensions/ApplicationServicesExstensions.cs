@@ -1,7 +1,9 @@
 ﻿using bafta_api.Errors;
+using bafta_api.Helpers;
 using bafta_api.Implementations;
 using bafta_api.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -14,13 +16,14 @@ namespace bafta_api.Exstensions
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
+            
 
             //add product service
             services.AddScoped<IProductRepository, ProductRepository>();
 
             //add generic service
-
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
 
             //api validation error response config
             services.Configure<ApiBehaviorOptions>(options =>
@@ -40,6 +43,9 @@ namespace bafta_api.Exstensions
                     return new BadRequestObjectResult(errorResponse);
                 };
             });
+
+            //add photo service
+            services.AddScoped<IPhotoService, PhotoService>();
 
             return services;
         }

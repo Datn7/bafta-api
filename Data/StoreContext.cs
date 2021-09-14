@@ -16,6 +16,8 @@ namespace bafta_api.Data
 
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductType> ProductTypes { get; set; }
+        public DbSet<Photo> Photos { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

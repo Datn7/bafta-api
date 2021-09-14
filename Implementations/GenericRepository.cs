@@ -1,8 +1,13 @@
 ﻿using bafta_api.Data;
 using bafta_api.Entities;
+using bafta_api.Helpers;
 using bafta_api.Interfaces;
 using bafta_api.Specifications;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +18,13 @@ namespace bafta_api.Implementations
     public class GenericRepository<T> : IGenericRepository<T> where T: BaseEntity
     {
         private readonly StoreContext storeContext;
+        private readonly IOptions<CloudinarySettings> config;
+        private readonly Cloudinary cloudinary;
 
-        public GenericRepository(StoreContext storeContext)
+        public GenericRepository(StoreContext storeContext, IOptions<CloudinarySettings> config)
         {
             this.storeContext = storeContext;
+            this.config = config;
         }
 
         public async Task<T> GetByIdAsync(int id)
@@ -52,6 +60,14 @@ namespace bafta_api.Implementations
             return SpecificationEvaluator<T>.GetQuery(storeContext.Set<T>().AsQueryable(), spec);
         }
 
-    
+        public Task<ImageUploadResult> AddPhotoAsync(IFormFile file)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<DeletionResult> DeletePhotoAsync(string publicId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

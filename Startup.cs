@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,6 +36,8 @@ namespace bafta_api
         public void ConfigureServices(IServiceCollection services)
         {
 
+            services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -43,6 +46,13 @@ namespace bafta_api
 
             //add connectionstring
             services.AddDbContext<StoreContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            //add Redis for caching basket
+            services.AddSingleton<ConnectionMultiplexer>(c =>
+            {
+                var configuration = ConfigurationOptions.Parse(Configuration.GetConnectionString("Redis"), true);
+                return ConnectionMultiplexer.Connect(configuration);
+            });
 
             //add extracted extended class
             services.AddApplicationServices();

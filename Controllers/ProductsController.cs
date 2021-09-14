@@ -13,6 +13,9 @@ using AutoMapper;
 using bafta_api.Dtos;
 using bafta_api.Errors;
 using bafta_api.Helpers;
+using CloudinaryDotNet;
+using Microsoft.Extensions.Options;
+using CloudinaryDotNet.Actions;
 
 namespace bafta_api.Controllers
 {
@@ -21,12 +24,37 @@ namespace bafta_api.Controllers
         private readonly IGenericRepository<Product> productsRepo;
         private readonly IGenericRepository<ProductType> prouctTypeRepo;
         private readonly IMapper mapper;
+        private readonly IOptions<CloudinarySettings> cloudinaryConfig;
+        private readonly IPhotoService photoService;
+        private readonly StoreContext storeContext;
+        private Cloudinary cloudinary;
 
-        public ProductsController(IGenericRepository<Product> productsRepo, IGenericRepository<ProductType> prouctTypeRepo, IMapper mapper)
+        public ProductsController(
+            IGenericRepository<Product> productsRepo, 
+            IGenericRepository<ProductType> prouctTypeRepo,
+            IMapper mapper,
+            IOptions<CloudinarySettings> cloudinaryConfig,
+            IPhotoService photoService,
+            StoreContext storeContext
+
+            )
         {
             this.productsRepo = productsRepo;
             this.prouctTypeRepo = prouctTypeRepo;
             this.mapper = mapper;
+            this.cloudinaryConfig = cloudinaryConfig;
+            this.photoService = photoService;
+            this.storeContext = storeContext;
+
+            //configure cloudinary config
+            Account acc = new Account(
+                cloudinaryConfig.Value.CloudName,
+                cloudinaryConfig.Value.ApiKey,
+                cloudinaryConfig.Value.ApiSecret
+            );
+
+            //pass account configuration to a field type of Cloudinary
+            cloudinary = new Cloudinary(acc);
         }
 
         // GET: api/Products
@@ -67,5 +95,16 @@ namespace bafta_api.Controllers
             return Ok(await prouctTypeRepo.ListAllAsync());
         }
 
+        [HttpPost]
+        public async Task<ActionResult<Product>> AddProduct(Product product)
+        {
+
+
+            storeContext.Products.Add(product);
+            await storeContext.SaveChangesAsync();
+
+            return Ok("Created");
+        }
+        
+        }
     }
-}

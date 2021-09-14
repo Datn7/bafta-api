@@ -18,6 +18,33 @@ namespace bafta_api.Implementations
             this.storeContext = storeContext;
         }
 
+        public void Add<T>(T entity) where T : class
+        {
+            storeContext.Add(entity);
+        }
+
+        public void Delete<T>(T entity) where T : class
+        {
+            storeContext.Remove(entity);    
+        }
+
+        public async Task<Photo> GetPhoto(int id)
+        {
+            //get photo from db with id
+            var photo = await storeContext.Photos.FirstOrDefaultAsync(p => p.Id == id);
+            return photo;
+        }
+
+        public async Task<Product> GetProduct(int id)
+        {
+
+            //get user and include photos also which is seperate class but included property
+            var product = await storeContext.Products.Include(p => p.Photos).FirstOrDefaultAsync(u => u.Id == id);
+
+            //return user
+            return product;
+        }
+
         public async Task<Product> GetProductByIdAsync(int id)
         {
             return await storeContext.Products.Include(p=>p.ProductType).FirstOrDefaultAsync(p=>p.Id==id);
@@ -31,6 +58,11 @@ namespace bafta_api.Implementations
         public async Task<IReadOnlyList<ProductType>> GetProductTypesAsync()
         {
             return await storeContext.ProductTypes.ToListAsync();
+        }
+
+        public async Task<bool> SaveAll()
+        {
+            return await storeContext.SaveChangesAsync() > 0;
         }
     }
 }

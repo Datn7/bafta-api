@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,5 +14,8 @@ namespace bafta_api.Entities
         public string PictureUrl { get; set; }
         public ProductType ProductType { get; set; }
         public int ProductTypeId { get; set; }
+
+        public ICollection<Photo> Photos { get; set; }
+
     }
 }
